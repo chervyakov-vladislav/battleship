@@ -1,5 +1,5 @@
 import { WebSocket as WsWebSocket } from 'ws';
-import { connectionDB } from '@/database/connections';
+import { connectionDB } from '../database/connections';
 import { ResponseDto } from '../types/types';
 
 class ConnectionController {

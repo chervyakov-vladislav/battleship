@@ -1,7 +1,7 @@
 import { WebSocket as WsWebSocket } from 'ws';
-import { UserAccount, Command } from '@/types/types';
-import { userDB } from '@/database/user';
-import { connectionDB } from '@/database/connections';
+import { UserAccount, Command } from '../types/types';
+import { userDB } from '../database/user';
+import { connectionDB } from '../database/connections';
 import { connectionController } from './connectionController';
 import { roomController } from './roomController';
 import { winnersController } from './winnersController';

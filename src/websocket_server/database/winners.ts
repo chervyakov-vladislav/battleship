@@ -1,4 +1,4 @@
-import { Winner } from '@/types/types';
+import { Winner } from '../types/types';
 
 class WinnersDB {
   winners: Winner[] = [];

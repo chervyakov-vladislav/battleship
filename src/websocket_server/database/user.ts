@@ -1,4 +1,4 @@
-import { UserAccount } from '@/types/types';
+import { UserAccount } from '../types/types';
 
 class UserDB {
   users: UserAccount[] = [];

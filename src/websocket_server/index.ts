@@ -1,7 +1,7 @@
 import { RawData, WebSocketServer as WS } from 'ws';
-import { router } from '@/router/router';
+import { router } from './router/router';
 import { ClientMessage } from './types/types';
-import { connectionController } from '@/controllers/connectionController';
+import { connectionController } from './controllers/connectionController';
 
 class WebSocketServer {
   private webSocketServer: WS | null = null;
