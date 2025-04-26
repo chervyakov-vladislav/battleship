@@ -15,11 +15,11 @@ class UserDB {
     return newUser;
   }
 
-  findUserById(id: string) {
+  findOneById(id: string) {
     return this.users.find((user) => user.id === id) || null;
   }
 
-  findUserByName(name: string) {
+  findOneByName(name: string) {
     return this.users.find((user) => user.name === name) || null;
   }
 }

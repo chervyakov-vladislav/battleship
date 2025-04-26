@@ -1,6 +1,7 @@
 import { RawData, WebSocketServer as WS } from 'ws';
 import { router } from '@/router/router';
 import { ClientMessage } from './types/types';
+import { connectionController } from '@/controllers/connectionController';
 
 class WebSocketServer {
   private webSocketServer: WS | null = null;
@@ -18,15 +19,13 @@ class WebSocketServer {
         console.log('New client connected');
 
         ws.on('close', async () => {
+          connectionController.removeConnectionBySocket(ws);
           console.log(`Client disconnected`);
         });
       
         ws.on('message', (message) => {
           const parsedMessage = this.parseReqMessage(message);
-          const result = router.routeMessage(parsedMessage);
-          const parsedResult = this.pasreResMessage(result);
-
-          ws.send(parsedResult)
+          router.routeMessage(parsedMessage, ws);
         });
       } catch (error) {
         ws.send(JSON.stringify({ code: 500, message: 'Internal server error' }));
@@ -41,20 +40,12 @@ class WebSocketServer {
 
   private parseReqMessage(rawMessage: RawData) {
     const parsedMessage = JSON.parse(rawMessage.toString());
-    const parsedMessageData = JSON.parse(parsedMessage.data);
+    const parsedMessageData = parsedMessage.data !== '' ? JSON.parse(parsedMessage.data) : '';
 
     return {
       ...parsedMessage,
       data: parsedMessageData
     } as ClientMessage;
-  }
-
-  // написать типы
-  private pasreResMessage(result: any) {
-    return JSON.stringify({
-      ...result,
-      data: JSON.stringify(result.data)
-    });
   }
 }
 

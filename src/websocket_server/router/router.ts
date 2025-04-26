@@ -1,17 +1,19 @@
+import { WebSocket as WsWebSocket } from 'ws';
 import { ClientMessage, Command } from '@/types/types';
 import { userController } from '../controllers/userController';
+import { roomController } from '../controllers/roomController';
+
 
 class Router {
-  routeMessage(msg: ClientMessage) {
+  routeMessage(msg: ClientMessage, ws: WsWebSocket) {
     switch (msg.type) {
       case Command.REG:
-        const data = userController.regUser(msg.data);
+        userController.regUser(msg.data, ws);
+        break;
 
-        return {
-          type: Command.REG,
-          data,
-          id: 0,
-        }
+      case Command.CREATE_ROOM:
+        roomController.createRoom(ws);
+        break;
     
       default:
         throw new Error('Invalid message type');
