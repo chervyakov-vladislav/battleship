@@ -28,7 +28,7 @@ class WebSocketServer {
           router.routeMessage(parsedMessage, ws);
         });
       } catch (error) {
-        ws.send(JSON.stringify({ code: 500, message: 'Internal server error' }));
+        connectionController.sendError(ws, 'Internal server error');
         console.log('Unexpected error:', error);
       }
     });

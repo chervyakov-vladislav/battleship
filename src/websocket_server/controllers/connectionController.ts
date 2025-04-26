@@ -35,6 +35,10 @@ class ConnectionController {
     }
   }
 
+  sendError(ws: WsWebSocket, message: string, code = 500) {
+    ws.send(JSON.stringify({ code, message }));
+  }
+
   private prepareMessage(response: ResponseDto) {
     return JSON.stringify({
       ...response,

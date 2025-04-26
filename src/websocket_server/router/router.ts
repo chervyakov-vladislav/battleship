@@ -2,6 +2,7 @@ import { WebSocket as WsWebSocket } from 'ws';
 import { ClientMessage, Command } from '@/types/types';
 import { userController } from '../controllers/userController';
 import { roomController } from '../controllers/roomController';
+import { connectionController } from '../controllers/connectionController';
 
 
 class Router {
@@ -14,9 +15,14 @@ class Router {
       case Command.CREATE_ROOM:
         roomController.createRoom(ws);
         break;
-    
+
+      case Command.ADD_USER_TO_ROOM:
+        roomController.addUserToRoom(msg.data.indexRoom, ws);
+        break;
+
       default:
-        throw new Error('Invalid message type');
+        connectionController.sendError(ws, 'Unexpected command')
+        break;
     }
   }
 }
