@@ -20,7 +20,11 @@
     "moduleResolution": "Node",
     "target": "ESNext",
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+
+    "paths": {
+      "@/*": ["./src/websocket_server/*"]
+    }
   },
   "include": ["src"]
 }
