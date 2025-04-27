@@ -5,14 +5,15 @@ import { Game, Room, PlayerShipsData } from '../shared/types';
 import { connectionController } from './connectionController';
 
 class GameController {
-  createGame(room: Room) {
+  createGame(room: Room, ownerId: string) {
     const newGameId = crypto.randomUUID();
 
     this.sendCreateGame(room, newGameId);
 
     const newGame: Game = {
       gameId: newGameId,
-      playersState: []
+      playersState: [],
+      turnId: ownerId
     }
 
     gameDB.addGame(newGame);
@@ -30,7 +31,6 @@ class GameController {
         data,
         id: 0
       }, [user.index])
-
     });
   }
 
@@ -40,7 +40,8 @@ class GameController {
     const currentGame = gameDB.getGame(gameId);
 
     if (currentGame && currentGame.playersState.length === 2) {
-      this.sendStartGame(currentGame)
+      this.sendStartGame(currentGame);
+      this.sendCurrentTurn(gameId);
     }
   }
 
@@ -57,6 +58,26 @@ class GameController {
         id: 0
       }, [playerState.indexPlayer])
     })
+  }
+
+  private sendCurrentTurn(gameId: string) {
+    const currentGame = gameDB.getGame(gameId);
+
+    const currentPlayersId = currentGame?.playersState.map((player) => {
+      const playerId = player.indexPlayer;
+
+      connectionController.sendMessage({
+        type: Command.TURN,
+        data: { currentPlayer: currentGame.turnId },
+        id: 0
+      }, [playerId]);
+
+      return playerId;
+    }) || [];
+
+    const nextTurnId = currentPlayersId.find((indexPlayer) => indexPlayer !== currentGame?.turnId) || '';
+
+    gameDB.updateTurnId(gameId, nextTurnId);
   }
 }
 

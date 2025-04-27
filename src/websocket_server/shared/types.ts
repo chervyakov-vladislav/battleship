@@ -10,7 +10,7 @@ export type RouterMessage = {
 
 export type ResponseDto = {
   type: CommandType,
-  data: UserAccountResponseDto | Room[] | Winner[] | CreateGameDto | StartGameDto,
+  data: UserAccountResponseDto | Room[] | Winner[] | CreateGameDto | StartGameDto | TurnDto,
   id: number
 };
 
@@ -45,6 +45,8 @@ type StartGameDto = {
   currentPlayerIndex: string;
 }
 
+type TurnDto = { currentPlayer: string }
+
 export type RoomUser = {
   name: string;
   index: string;
@@ -65,6 +67,7 @@ export type Winner = {
 export type Game = {
   gameId: string,  
   playersState: PlayerState[],
+  turnId: string
 }
 
 type Position = {
@@ -87,4 +90,4 @@ export type PlayerShipsData = {
   indexPlayer: string;
 }
 
-export type PlayerState = Omit<PlayerShipsData, 'gameId'>
+export type PlayerState = Omit<PlayerShipsData, 'gameId'>;

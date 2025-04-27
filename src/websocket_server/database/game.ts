@@ -12,12 +12,24 @@ class GameDb {
   }
 
   pushPlayerState(gameId: string, playerState: PlayerState) {
-    this.games.forEach((game) => {
+    this.games = this.games.map((game) => {
       if (game.gameId === gameId) {
-        if (game.playersState.length > 2) return;
+        if (game.playersState.length > 2) return game;
 
         game.playersState.push(playerState);
       }
+
+      return game;
+    });
+  }
+
+  updateTurnId(gameId: string, newTurnId: string) {
+    this.games = this.games.map((game) => {
+      if (game.gameId === gameId) {
+        game.turnId = newTurnId;
+      }
+
+      return game;
     });
   }
 }

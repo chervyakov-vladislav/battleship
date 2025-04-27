@@ -73,7 +73,7 @@ class RoomController {
 
     if (!newRoom) return;
 
-    gameController.createGame(newRoom);
+    gameController.createGame(newRoom, user.id);
 
     roomDB.deleteRooms(roomId);
 
