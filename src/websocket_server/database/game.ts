@@ -1,4 +1,4 @@
-import { CellState, Game, PlayerState } from '../shared/types';
+import { CellState, Game, PlayerState, Position, ShipState } from '../shared/types';
 
 class GameDb {
   games: Game[] = [];
@@ -50,6 +50,42 @@ class GameDb {
 
       return game;
     });
+  }
+
+  findShipByPosition(gameId: string, playerId: string, position: Position) {
+    const ships = this.findPlayerShips(gameId, playerId);
+  
+    let shipState: ShipState | null = null;
+    let shipStateIndex: number = -1;
+  
+    for (let i = 0; i < ships.length; i++) {
+      if (ships[i].allPositions.some((pos) => pos.x === position.x && pos.y === position.y)) {
+        shipState = ships[i];
+        shipStateIndex = i;
+        break;
+      }
+    }
+  
+    return {
+      shipState,
+      shipStateIndex
+    };
+  }
+
+  private findPlayerShips(gameId: string, playerId: string) {
+    let ships: ShipState[] = [];
+
+    this.games.forEach((game) => {
+      if (game.gameId === gameId) {
+        game.playersState.forEach((state) => {
+          if (state.indexPlayer === playerId) {
+            ships = state.ships;
+          }
+        });
+      };
+    });
+
+    return ships;
   }
 }
 

@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { gameDB } from '../database/game';
 import { Command, Direction, hitStatus } from '../shared/constants';
-import { Game, Room, PlayerShipsData, ShipState, Position, Ship, AttackData } from '../shared/types';
+import { Game, Room, PlayerShipsData, ShipState, Position, Ship, AttackData, AttackResponse } from '../shared/types';
 import { connectionController } from './connectionController';
 import { BoardController } from './boardController';
 import { connectionDB } from '../database/connections';
@@ -101,18 +101,20 @@ class GameController {
   }
 
   private calculateShipPositions({ length, direction, position }: Ship) {
-    const positions = Array.from({ length }, (_, i) => {
-      const newCoordinate = direction === Direction.HORIZONTAL
-        ? { x: position.x + i, y: position.y }
-        : { x: position.x, y: position.y + i };
-
-      return newCoordinate
-    });
-
+    const positions = [];
+  
+    for (let i = 0; i < length; i++) {
+      const x = direction === Direction.HORIZONTAL ? position.x + i : position.x;
+      const y = direction === Direction.VERTICAL ? position.y + i : position.y;
+      positions.push({ x, y });
+    }
+  
     return positions;
   }
 
-  private calculatePositionsAround({ length, direction, position }: Ship) {
+  private calculatePositionsAround(ship: Ship) {
+    const allPositions = this.calculateShipPositions(ship);
+    const { length, direction, position } = ship;
     const around = new Map<string, Position>();
 
     for (let i = 0; i < length; i++) {
@@ -134,6 +136,11 @@ class GameController {
       }
     }
 
+    allPositions.forEach(({ x, y }) => {
+      const key = `${x},${y}`;
+      around.delete(key);
+    });
+
     const positionsAround = Array.from(around.values());
 
     return positionsAround;
@@ -144,6 +151,7 @@ class GameController {
   }
 
   handleAttack(data: AttackData) {
+    const position = { x: data.x, y: data.y }
     const game = gameDB.getGame(data.gameId);
 
     if (!game) return;
@@ -161,7 +169,8 @@ class GameController {
 
     if (!enemyState) return;
 
-    const cell = enemyState.board[data.x][data.y];
+    const cell = enemyState.board[data.y][data.x];
+    console.log(cell);
 
     if (cell.isHit) {
       const ws = connectionDB.findSocketByUserId(data.indexPlayer);
@@ -177,18 +186,39 @@ class GameController {
     gameDB.updateBoard(data.gameId, enemyState.indexPlayer, enemyState.board);
 
     if (cell.hasShip) {
-      // check ship state
+      const { shipState: newShipState } = gameDB.findShipByPosition(data.gameId, enemyState.indexPlayer, position);
+
+      if (newShipState) {
+        newShipState.damagedPositions.push(position);
+
+        if (newShipState.length === newShipState.damagedPositions.length) {
+          this.sendAttackResponse(position, data.indexPlayer, enemyState.indexPlayer, hitStatus.KILLED);
+
+          newShipState.positionsAround.forEach((positionAround) => {
+            this.sendAttackResponse(positionAround, data.indexPlayer, enemyState.indexPlayer, hitStatus.MISS);
+            const cell = enemyState.board[positionAround.y][positionAround.x];
+            cell.isHit = true;
+            gameDB.updateBoard(data.gameId, enemyState.indexPlayer, enemyState.board);
+          });
+
+          // check winner state
+        } {
+          this.sendAttackResponse(position, data.indexPlayer, enemyState.indexPlayer, hitStatus.SHOT);
+        }
+        this.sendCurrentTurn(data.gameId, false);
+      }
+
     } else {
-      this.sendMiss({ x: data.x, y: data.y }, data.indexPlayer, enemyState.indexPlayer);
+      this.sendAttackResponse(position, data.indexPlayer, enemyState.indexPlayer, hitStatus.MISS);
       this.sendCurrentTurn(data.gameId, true);
     }
   };
 
-  private sendMiss(position: Position, playerId: string, enemyId: string) {
+  private sendAttackResponse(position: Position, playerId: string, enemyId: string, status: AttackResponse['status']) {
     const response = {
       position,
       currentPlayer: playerId,
-      status: hitStatus.MISS
+      status: status
     }
 
     connectionController.sendMessage({

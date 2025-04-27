@@ -106,7 +106,6 @@ export type CellState = {
   position: Position;
   hasShip: boolean;
   isHit: boolean;
-  isMiss: boolean;
 };
 
 export type AttackData = {
@@ -116,7 +115,7 @@ export type AttackData = {
     indexPlayer: string,
 }
 
-type AttackResponse = {
+export type AttackResponse = {
     position: Position,
     currentPlayer: string
     status: "miss" | "killed" | "shot",

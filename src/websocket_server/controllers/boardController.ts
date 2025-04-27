@@ -18,7 +18,6 @@ export class BoardController {
           position: { x, y },
           hasShip: false,
           isHit: false,
-          isMiss: false,
         });
       }
 
