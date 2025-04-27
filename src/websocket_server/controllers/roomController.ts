@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { WebSocket as WsWebSocket } from 'ws';
 import { connectionDB } from '../database/connections';
 import { userDB } from '../database/user';

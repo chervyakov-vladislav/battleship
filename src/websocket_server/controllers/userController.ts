@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { WebSocket as WsWebSocket } from 'ws';
 import { UserAccount } from '../shared/types';
 import { Command } from '../shared/constants';

@@ -4,6 +4,7 @@ import { userController } from '../controllers/userController';
 import { roomController } from '../controllers/roomController';
 import { connectionController } from '../controllers/connectionController';
 import { Command } from '../shared/constants';
+import { gameController } from '../controllers/gameController';
 
 
 class Router {
@@ -22,9 +23,8 @@ class Router {
         break;
 
       case Command.ADD_SHIPS:
-        console.log(msg);
-        console.log(msg.data.ships[0]);
-        break;  
+        gameController.addPlayerShips(msg.data);
+        break;
 
       default:
         connectionController.sendError(ws, 'Unexpected command')

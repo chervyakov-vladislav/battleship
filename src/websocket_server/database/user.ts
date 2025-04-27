@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { UserAccount } from '../shared/types';
 
 class UserDB {

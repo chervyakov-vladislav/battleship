@@ -10,7 +10,7 @@ export type RouterMessage = {
 
 export type ResponseDto = {
   type: CommandType,
-  data: UserAccountResponseDto | Room[] | Winner[] | Game,
+  data: UserAccountResponseDto | Room[] | Winner[] | CreateGameDto | StartGameDto,
   id: number
 };
 
@@ -25,7 +25,7 @@ type CommandType = typeof Command[keyof typeof Command];
 type RegMessage = BaseMessage<'reg', UserAccount>;
 type CreateRoomMessage = BaseMessage<'create_room', string>;
 type AddUserToRoomMessage = BaseMessage<'add_user_to_room', { indexRoom: string }>
-type AddShipsMessage = BaseMessage<'add_ships', AddShips>
+type AddShipsMessage = BaseMessage<'add_ships', PlayerShipsData>
 
 export type UserAccount = { name: string; password: string, id: string };
 export type UserAccountResponseDto = {
@@ -34,6 +34,16 @@ export type UserAccountResponseDto = {
   error: boolean,
   errorText: string,
 };
+
+export type CreateGameDto = {
+  idGame: string,
+  idPlayer: string
+}
+
+type StartGameDto = {
+  ships: Ship[];
+  currentPlayerIndex: string;
+}
 
 export type RoomUser = {
   name: string;
@@ -51,12 +61,12 @@ export type Winner = {
   wins: number;
 }
 
+//battleship matrix
 export type Game = {
-  idGame: string,  
-  idPlayer: string,
+  gameId: string,  
+  playersState: PlayerState[],
 }
 
-//battleship matrix
 type Position = {
   x: number;
   y: number;
@@ -71,8 +81,10 @@ type Ship = {
   length: number;
 }
 
-interface AddShips {
+export type PlayerShipsData = {
   gameId: string;
   ships: Ship[];
   indexPlayer: string;
 }
+
+export type PlayerState = Omit<PlayerShipsData, 'gameId'>
