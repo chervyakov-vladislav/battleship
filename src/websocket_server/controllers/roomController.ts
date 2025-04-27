@@ -60,10 +60,10 @@ class RoomController {
       return;
     }
 
-    const isUserInRoom = currentRoom.roomUsers.find((u) => u.name === user.name) || null;
+    const isUserTryingToJoinOwnRoom = currentRoom.roomUsers.find((u) => u.name === user.name) || null;
 
-    if (isUserInRoom) {
-      connectionController.sendError(ws, 'This user is already in the room');
+    if (isUserTryingToJoinOwnRoom) {
+      connectionController.sendError(ws, 'You cannot join your own room');
       return;
     }
 
@@ -74,7 +74,7 @@ class RoomController {
 
     gameController.createGame(newRoom);
 
-    roomDB.deleteRoom(roomId);
+    roomDB.deleteRooms(roomId);
 
     connectionController.sendMessage({
       type: Command.UPDATE_ROOM,

@@ -24,8 +24,4 @@ class UserDB {
   }
 }
 
-const userDB = new UserDB();
-
-export {
-  userDB
-}
+export const userDB = new UserDB();

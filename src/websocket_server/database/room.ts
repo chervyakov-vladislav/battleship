@@ -17,8 +17,17 @@ class RoomDB {
     return this.rooms;
   }
 
-  deleteRoom(roomId: string) {
+  deleteRooms(roomId: string) {
+    const [firstPlayerIndex, secondPlayerIndex] = this
+      .findOneByRoomId(roomId)?.roomUsers
+      .map((users) => users.index) ?? [];
+
     this.rooms = this.rooms.filter((room) => room.roomId !== roomId);
+    this.rooms = this.rooms.filter((room) => {
+      const isUserPendingInRoom = room.roomUsers.some((user) => user.index === firstPlayerIndex || user.index === secondPlayerIndex);
+
+      return !isUserPendingInRoom;
+    });
   }
 
   addUserToRoom(roomId: string, roomUser: RoomUser) {
