@@ -7,7 +7,8 @@ export const Command = {
   CREATE_GAME: 'create_game',
   ADD_SHIPS: 'add_ships',
   START_GAME: 'start_game',
-  TURN: 'turn'
+  TURN: 'turn',
+  ATTACK: 'attack'
 } as const;
 
 export const Direction = {
@@ -20,4 +21,10 @@ export const ShipType = {
   MEDIUM: 'medium',
   LARGE: 'large',
   HUGE: 'huge'
+} as const;
+
+export const hitStatus = {
+  MISS: 'miss',
+  SHOT: 'shot',
+  KILLED: 'killed'
 } as const;

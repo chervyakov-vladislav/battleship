@@ -25,6 +25,10 @@ class Router {
       case Command.ADD_SHIPS:
         gameController.addPlayerShips(msg.data);
         break;
+      
+      case Command.ATTACK:
+        gameController.handleAttack(msg.data);
+        break;
 
       default:
         connectionController.sendError(ws, 'Unexpected command')

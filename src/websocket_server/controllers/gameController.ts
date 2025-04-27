@@ -1,8 +1,10 @@
 import crypto from 'node:crypto';
 import { gameDB } from '../database/game';
-import { Command } from '../shared/constants';
-import { Game, Room, PlayerShipsData } from '../shared/types';
+import { Command, Direction, hitStatus } from '../shared/constants';
+import { Game, Room, PlayerShipsData, ShipState, Position, Ship, AttackData } from '../shared/types';
 import { connectionController } from './connectionController';
+import { BoardController } from './boardController';
+import { connectionDB } from '../database/connections';
 
 class GameController {
   createGame(room: Room, ownerId: string) {
@@ -35,13 +37,26 @@ class GameController {
   }
 
   addPlayerShips({ indexPlayer, gameId, ships }: PlayerShipsData) {
-    gameDB.pushPlayerState(gameId, { indexPlayer, ships });
+    const shipsState: ShipState[] = ships.map((ship) => {
+      const allPositions = this.calculateShipPositions(ship);
+      const positionsAround = this.calculatePositionsAround(ship);
+
+      return {
+        ...ship,
+        allPositions,
+        positionsAround,
+        damagedPositions: []
+      }
+    })
+
+    const board = new BoardController(indexPlayer, gameId).fillBoard(shipsState);
+    gameDB.pushPlayerState(gameId, { indexPlayer, ships: shipsState, board });
 
     const currentGame = gameDB.getGame(gameId);
 
     if (currentGame && currentGame.playersState.length === 2) {
       this.sendStartGame(currentGame);
-      this.sendCurrentTurn(gameId);
+      this.sendCurrentTurn(gameId, false);
     }
   }
 
@@ -60,24 +75,127 @@ class GameController {
     })
   }
 
-  private sendCurrentTurn(gameId: string) {
+  private sendCurrentTurn(gameId: string, updateTurnId: boolean) {
     const currentGame = gameDB.getGame(gameId);
 
-    const currentPlayersId = currentGame?.playersState.map((player) => {
-      const playerId = player.indexPlayer;
+    if (!currentGame) return;
 
-      connectionController.sendMessage({
-        type: Command.TURN,
-        data: { currentPlayer: currentGame.turnId },
-        id: 0
-      }, [playerId]);
+    const [firstPlayerId, secondPlayerId] = currentGame.playersState.map((state) => state.indexPlayer);
+    const currentTurnId = currentGame.turnId;
+    const nextTurnId = currentTurnId === firstPlayerId ? secondPlayerId : firstPlayerId;
+    const responce = { currentPlayer: updateTurnId ? nextTurnId : currentGame.turnId };
 
-      return playerId;
-    }) || [];
+    connectionController.sendMessage({
+      type: Command.TURN,
+      data: responce,
+      id: 0
+    }, [firstPlayerId]);
 
-    const nextTurnId = currentPlayersId.find((indexPlayer) => indexPlayer !== currentGame?.turnId) || '';
+    connectionController.sendMessage({
+      type: Command.TURN,
+      data: responce,
+      id: 0
+    }, [secondPlayerId]);
 
-    gameDB.updateTurnId(gameId, nextTurnId);
+    gameDB.updateTurnId(gameId, updateTurnId ? nextTurnId : currentGame.turnId);
+  }
+
+  private calculateShipPositions({ length, direction, position }: Ship) {
+    const positions = Array.from({ length }, (_, i) => {
+      const newCoordinate = direction === Direction.HORIZONTAL
+        ? { x: position.x + i, y: position.y }
+        : { x: position.x, y: position.y + i };
+
+      return newCoordinate
+    });
+
+    return positions;
+  }
+
+  private calculatePositionsAround({ length, direction, position }: Ship) {
+    const around = new Map<string, Position>();
+
+    for (let i = 0; i < length; i++) {
+      const x = position.x + (direction === Direction.HORIZONTAL ? i : 0);
+      const y = position.y + (direction === Direction.VERTICAL ? i : 0);
+
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          const newX = x + dx;
+          const newY = y + dy;
+
+          if (dx === 0 && dy === 0) continue;
+
+          if (this.isValidPosition({ x: newX, y: newY })) {
+            const key = `${newX},${newY}`;
+            around.set(key, { x: newX, y: newY });
+          }
+        }
+      }
+    }
+
+    const positionsAround = Array.from(around.values());
+
+    return positionsAround;
+  }
+
+  private isValidPosition(position: Position) {
+    return position.x >= 0 && position.x < 10 && position.y >= 0 && position.y < 10;
+  }
+
+  handleAttack(data: AttackData) {
+    const game = gameDB.getGame(data.gameId);
+
+    if (!game) return;
+
+    if (game.turnId !== data.indexPlayer) {
+      const ws = connectionDB.findSocketByUserId(data.indexPlayer);
+
+      if (ws) {
+        connectionController.sendError(ws, 'Now it\'s not your turn');
+        return;
+      }
+    }
+
+    const enemyState = game.playersState.find((state) => state.indexPlayer !== data.indexPlayer);
+
+    if (!enemyState) return;
+
+    const cell = enemyState.board[data.x][data.y];
+
+    if (cell.isHit) {
+      const ws = connectionDB.findSocketByUserId(data.indexPlayer);
+
+      if (ws) {
+        connectionController.sendError(ws, 'Wrong cell');
+        return;
+      }
+    }
+
+    cell.isHit = true;
+
+    gameDB.updateBoard(data.gameId, enemyState.indexPlayer, enemyState.board);
+
+    if (cell.hasShip) {
+      // check ship state
+    } else {
+      this.sendMiss({ x: data.x, y: data.y }, data.indexPlayer, enemyState.indexPlayer);
+      this.sendCurrentTurn(data.gameId, true);
+    }
+  };
+
+  private sendMiss(position: Position, playerId: string, enemyId: string) {
+    const response = {
+      position,
+      currentPlayer: playerId,
+      status: hitStatus.MISS
+    }
+
+    connectionController.sendMessage({
+      type: Command.ATTACK,
+      data: response,
+      id: 0
+    }, [playerId, enemyId]);
   }
 }
 

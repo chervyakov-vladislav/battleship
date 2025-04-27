@@ -1,6 +1,6 @@
 import { Command } from './constants';
 
-export type ClientMessage = RegMessage | CreateRoomMessage | AddUserToRoomMessage | AddShipsMessage;
+export type ClientMessage = RegMessage | CreateRoomMessage | AddUserToRoomMessage | AddShipsMessage | AttackMessage;
 
 export type RouterMessage = {
   response: ResponseDto,
@@ -10,7 +10,7 @@ export type RouterMessage = {
 
 export type ResponseDto = {
   type: CommandType,
-  data: UserAccountResponseDto | Room[] | Winner[] | CreateGameDto | StartGameDto | TurnDto,
+  data: UserAccountResponseDto | Room[] | Winner[] | CreateGameDto | StartGameDto | TurnDto | AttackResponse,
   id: number
 };
 
@@ -22,10 +22,11 @@ interface BaseMessage<T extends CommandType, D> {
 
 type CommandType = typeof Command[keyof typeof Command];
 
-type RegMessage = BaseMessage<'reg', UserAccount>;
-type CreateRoomMessage = BaseMessage<'create_room', string>;
-type AddUserToRoomMessage = BaseMessage<'add_user_to_room', { indexRoom: string }>
-type AddShipsMessage = BaseMessage<'add_ships', PlayerShipsData>
+type RegMessage = BaseMessage<typeof Command.REG, UserAccount>;
+type CreateRoomMessage = BaseMessage<typeof Command.CREATE_ROOM, string>;
+type AddUserToRoomMessage = BaseMessage<typeof Command.ADD_USER_TO_ROOM, { indexRoom: string }>
+type AddShipsMessage = BaseMessage<typeof Command.ADD_SHIPS, PlayerShipsData>
+type AttackMessage = BaseMessage<typeof Command.ATTACK, AttackData>
 
 export type UserAccount = { name: string; password: string, id: string };
 export type UserAccountResponseDto = {
@@ -63,25 +64,30 @@ export type Winner = {
   wins: number;
 }
 
-//battleship matrix
 export type Game = {
   gameId: string,  
   playersState: PlayerState[],
   turnId: string
 }
 
-type Position = {
+export type Position = {
   x: number;
   y: number;
 }
 
 type ShipType = 'small' | 'medium' | 'large' | 'huge';
 
-type Ship = {
+export type Ship = {
   position: Position;
   direction: boolean;
   type: ShipType;
   length: number;
+}
+
+export type ShipState = Ship & {
+  allPositions: Position[],
+  positionsAround: Position[],
+  damagedPositions: Position[],
 }
 
 export type PlayerShipsData = {
@@ -90,4 +96,28 @@ export type PlayerShipsData = {
   indexPlayer: string;
 }
 
-export type PlayerState = Omit<PlayerShipsData, 'gameId'>;
+export type PlayerState = {
+  indexPlayer: string;
+  ships: ShipState[],
+  board: CellState[][]
+};
+
+export type CellState = {
+  position: Position;
+  hasShip: boolean;
+  isHit: boolean;
+  isMiss: boolean;
+};
+
+export type AttackData = {
+    gameId: string,
+    x: number,
+    y: number,
+    indexPlayer: string,
+}
+
+type AttackResponse = {
+    position: Position,
+    currentPlayer: string
+    status: "miss" | "killed" | "shot",
+}
