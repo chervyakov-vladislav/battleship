@@ -1,6 +1,6 @@
 import { WebSocket as WsWebSocket } from 'ws';
 import { connectionDB } from '../database/connections';
-import { ResponseDto } from '../types/types';
+import { ResponseDto } from '../shared/types';
 
 class ConnectionController {
   addConnection(userId: string, ws: WsWebSocket) {

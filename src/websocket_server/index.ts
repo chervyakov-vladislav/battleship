@@ -1,6 +1,6 @@
 import { RawData, WebSocketServer as WS } from 'ws';
 import { router } from './router/router';
-import { ClientMessage } from './types/types';
+import { ClientMessage } from './shared/types';
 import { connectionController } from './controllers/connectionController';
 
 class WebSocketServer {

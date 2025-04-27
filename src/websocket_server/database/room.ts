@@ -1,4 +1,4 @@
-import { Room, RoomUser } from '../types/types';
+import { Room, RoomUser } from '../shared/types';
 
 class RoomDB {
   rooms: Room[] = [];

@@ -1,8 +1,9 @@
 import { WebSocket as WsWebSocket } from 'ws';
-import { ClientMessage, Command } from '../types/types';
+import { ClientMessage} from '../shared/types';
 import { userController } from '../controllers/userController';
 import { roomController } from '../controllers/roomController';
 import { connectionController } from '../controllers/connectionController';
+import { Command } from '../shared/constants';
 
 
 class Router {
@@ -19,6 +20,11 @@ class Router {
       case Command.ADD_USER_TO_ROOM:
         roomController.addUserToRoom(msg.data.indexRoom, ws);
         break;
+
+      case Command.ADD_SHIPS:
+        console.log(msg);
+        console.log(msg.data.ships[0]);
+        break;  
 
       default:
         connectionController.sendError(ws, 'Unexpected command')

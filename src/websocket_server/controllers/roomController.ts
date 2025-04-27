@@ -2,7 +2,7 @@ import { WebSocket as WsWebSocket } from 'ws';
 import { connectionDB } from '../database/connections';
 import { userDB } from '../database/user';
 import { roomDB } from '../database/room';
-import { Command } from '../types/types';
+import { Command } from '../shared/constants';
 import { connectionController } from './connectionController';
 import { gameController } from './gameController';
 

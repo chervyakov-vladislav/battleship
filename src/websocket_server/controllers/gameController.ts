@@ -1,4 +1,5 @@
-import { Command, Room } from '../types/types';
+import { Command } from '../shared/constants';
+import { Room } from '../shared/types';
 import { connectionController } from './connectionController';
 
 class GameController {

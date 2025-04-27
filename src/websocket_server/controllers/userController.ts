@@ -1,5 +1,6 @@
 import { WebSocket as WsWebSocket } from 'ws';
-import { UserAccount, Command } from '../types/types';
+import { UserAccount } from '../shared/types';
+import { Command } from '../shared/constants';
 import { userDB } from '../database/user';
 import { connectionDB } from '../database/connections';
 import { connectionController } from './connectionController';

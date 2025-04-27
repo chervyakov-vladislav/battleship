@@ -1,5 +1,5 @@
 import { winnersDB } from '../database/winners';
-import { Command } from '../types/types';
+import { Command } from '../shared/constants';
 import { connectionController } from './connectionController';
 
 class WinnersController {

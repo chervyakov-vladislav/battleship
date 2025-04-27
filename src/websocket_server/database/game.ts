@@ -1,4 +1,4 @@
-import { Game } from '../types/types';
+import { Game } from '../shared/types';
 
 class GameDb {
   games: Game[] = []

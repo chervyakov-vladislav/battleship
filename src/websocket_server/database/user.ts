@@ -1,4 +1,4 @@
-import { UserAccount } from '../types/types';
+import { UserAccount } from '../shared/types';
 
 class UserDB {
   users: UserAccount[] = [];
