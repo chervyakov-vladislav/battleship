@@ -10,11 +10,29 @@ import { winnersController } from './winnersController';
 
 class UserController {
   regUser(user: UserAccount, ws: WsWebSocket) {
-    
+    const tmpConnetctionId = crypto.randomUUID();
+    const validationMessage = this.validation(user);
+
+    if (validationMessage) {
+      connectionController.addConnection(tmpConnetctionId, ws);
+        connectionController.sendMessage({
+          type: Command.REG,
+          data: {
+            name: '',
+            index: tmpConnetctionId,
+            error: true,
+            errorText: validationMessage
+          },
+          id: 0,
+        }, [tmpConnetctionId]);
+        connectionController.removeConnectionBySocket(ws);
+
+      return;
+    }
+
     const existingUser = userDB.findOneByName(user.name);
     const existingUserId = existingUser?.id ?? '';
     const userSocket = connectionDB.findSocketByUserId(existingUserId);
-    const tmpConnetctionId = crypto.randomUUID();
 
     if (!existingUser) {
       const newUser = userDB.addUser(user);
@@ -89,6 +107,25 @@ class UserController {
       id: 0,
     }, [tmpConnetctionId]);
     connectionController.removeConnectionBySocket(ws);
+  }
+
+  validation(user: UserAccount) {
+    const login = user.name.trim();
+    const password = user.password.trim()
+
+    if (!/^[a-zA-Z0-9]{4,20}$/.test(login)) {
+      return 'Login error: Only Latin letters and numbers are allowed'
+    }
+
+    if (!/[A-Za-z]/.test(login)) {
+      return 'Password error: Must contain at least one Latin letter';
+    }
+  
+    if (!/\d/.test(password)) {
+      return 'Password error: Must contain at least one number';
+    }
+
+    return null;
   }
 }
 

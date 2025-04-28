@@ -4,14 +4,12 @@ import { ResponseDto } from '../shared/types';
 
 class ConnectionController {
   addConnection(userId: string, ws: WsWebSocket) {
-    console.log(`user socket append. id: ${userId}`);
     connectionDB.addConnection(userId, ws);
   }
 
   removeConnectionBySocket(ws: WsWebSocket) {
     const userId = connectionDB.findUserIdBySocket(ws);
     if (userId) {
-      console.log(`user socket removed. id: ${userId}`);
       connectionDB.removeConnectionByUserId(userId);
     }
   }
