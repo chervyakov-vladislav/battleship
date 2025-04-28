@@ -7,6 +7,10 @@ class GameDb {
     this.games.push(game);
   }
 
+  deleteGame(gameId: string) {
+    this.games = this.games.filter((game) => game.gameId !== gameId)
+  }
+
   getGame(gameId: string) {
     return this.games.find((game) => game.gameId === gameId) || null;
   }
@@ -72,7 +76,7 @@ class GameDb {
     };
   }
 
-  private findPlayerShips(gameId: string, playerId: string) {
+  findPlayerShips(gameId: string, playerId: string) {
     let ships: ShipState[] = [];
 
     this.games.forEach((game) => {

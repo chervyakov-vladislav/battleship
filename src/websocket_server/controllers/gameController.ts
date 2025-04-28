@@ -5,6 +5,7 @@ import { Game, Room, PlayerShipsData, ShipState, Position, Ship, AttackData, Att
 import { connectionController } from './connectionController';
 import { BoardController } from './boardController';
 import { connectionDB } from '../database/connections';
+import { winnersController } from './winnersController';
 
 class GameController {
   createGame(room: Room, ownerId: string) {
@@ -45,7 +46,8 @@ class GameController {
         ...ship,
         allPositions,
         positionsAround,
-        damagedPositions: []
+        damagedPositions: [],
+        isAlive: true
       }
     })
 
@@ -212,29 +214,42 @@ class GameController {
         newShipState.damagedPositions.push(position);
 
         if (newShipState.length === newShipState.damagedPositions.length) {
-          this.sendAttackResponse(position, data.indexPlayer, enemyState.indexPlayer, hitStatus.KILLED);
+          this.sendAttackResponse(position, data.indexPlayer, [data.indexPlayer, enemyState.indexPlayer], hitStatus.KILLED);
 
           newShipState.positionsAround.forEach((positionAround) => {
-            this.sendAttackResponse(positionAround, data.indexPlayer, enemyState.indexPlayer, hitStatus.MISS);
+            this.sendAttackResponse(positionAround, data.indexPlayer, [data.indexPlayer, enemyState.indexPlayer], hitStatus.MISS);
             const cell = enemyState.board[positionAround.y][positionAround.x];
             cell.isHit = true;
             gameDB.updateBoard(data.gameId, enemyState.indexPlayer, enemyState.board);
           });
 
-          // check winner state
+          newShipState.isAlive = false;
+          const enemyShips = gameDB.findPlayerShips(data.gameId, enemyState.indexPlayer);
+          const isFinish = this.checkIsFinish(enemyShips);
+
+          if (isFinish) {
+            this.sendFinish(data.indexPlayer, [data.indexPlayer, enemyState.indexPlayer]);
+            
+            winnersController.updateWinners(data.indexPlayer);
+            gameDB.deleteGame(data.gameId);
+          }
         } {
-          this.sendAttackResponse(position, data.indexPlayer, enemyState.indexPlayer, hitStatus.SHOT);
+          this.sendAttackResponse(position, data.indexPlayer, [data.indexPlayer, enemyState.indexPlayer], hitStatus.SHOT);
         }
         this.sendCurrentTurn(data.gameId, false);
       }
 
     } else {
-      this.sendAttackResponse(position, data.indexPlayer, enemyState.indexPlayer, hitStatus.MISS);
+      this.sendAttackResponse(position, data.indexPlayer, [data.indexPlayer, enemyState.indexPlayer], hitStatus.MISS);
       this.sendCurrentTurn(data.gameId, true);
     }
   };
 
-  private sendAttackResponse(position: Position, playerId: string, enemyId: string, status: AttackResponse['status']) {
+  private checkIsFinish(ships: ShipState[]) {
+    return ships.every(({ isAlive }) => !isAlive);
+  }
+
+  private sendAttackResponse(position: Position, playerId: string, recipients: string[], status: AttackResponse['status']) {
     const response = {
       position,
       currentPlayer: playerId,
@@ -245,7 +260,15 @@ class GameController {
       type: Command.ATTACK,
       data: response,
       id: 0
-    }, [playerId, enemyId]);
+    }, recipients);
+  }
+
+  private sendFinish(winnerId: string, recipients: string[]) {
+    connectionController.sendMessage({
+      type: Command.FINISH,
+      data: { winPlayer: winnerId },
+      id: 0
+    }, recipients);
   }
 }
 

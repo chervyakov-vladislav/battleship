@@ -32,7 +32,7 @@ class UserController {
       }, [newUser.id]);
 
       roomController.updateRoom();
-      winnersController.updateWinners();
+      winnersController.sendUpdateWinners();
 
       return;
     }
@@ -55,7 +55,7 @@ class UserController {
         }, [existingUserId]);
   
         roomController.updateRoom();
-        winnersController.updateWinners();
+        winnersController.sendUpdateWinners();
   
         return;
       } else {

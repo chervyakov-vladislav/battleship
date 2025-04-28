@@ -10,7 +10,7 @@ export type RouterMessage = {
 
 export type ResponseDto = {
   type: CommandType,
-  data: UserAccountResponseDto | Room[] | Winner[] | CreateGameDto | StartGameDto | TurnDto | AttackResponse,
+  data: UserAccountResponseDto | Room[] | Winner[] | CreateGameDto | StartGameDto | TurnDto | AttackResponse | Finish,
   id: number
 };
 
@@ -89,6 +89,7 @@ export type ShipState = Ship & {
   allPositions: Position[],
   positionsAround: Position[],
   damagedPositions: Position[],
+  isAlive: boolean;
 }
 
 export type PlayerShipsData = {
@@ -122,4 +123,8 @@ export type AttackResponse = {
     position: Position,
     currentPlayer: string
     status: "miss" | "killed" | "shot",
+}
+
+type Finish = {
+  winPlayer: string,
 }
