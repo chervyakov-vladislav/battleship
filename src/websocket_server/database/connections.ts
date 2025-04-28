@@ -5,7 +5,6 @@ class ConnectionDB {
 
   addConnection(userId: string, ws: WsWebSocket) {
     this.connections.set(userId, ws);
-    console.log('active connections count: ', this.connections.size);
   }
 
   removeConnectionByUserId(userId: string) {

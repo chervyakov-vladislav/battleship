@@ -10,13 +10,15 @@ import { winnersController } from './winnersController';
 class GameController {
   createGame(room: Room, ownerId: string) {
     const newGameId = crypto.randomUUID();
+    const playersId = room.roomUsers.map((user) => user.index);
 
     this.sendCreateGame(room, newGameId);
 
     const newGame: Game = {
       gameId: newGameId,
       playersState: [],
-      turnId: ownerId
+      turnId: ownerId,
+      playersId
     }
 
     gameDB.addGame(newGame);
@@ -263,7 +265,7 @@ class GameController {
     }, recipients);
   }
 
-  private sendFinish(winnerId: string, recipients: string[]) {
+  sendFinish(winnerId: string, recipients: string[]) {
     connectionController.sendMessage({
       type: Command.FINISH,
       data: { winPlayer: winnerId },

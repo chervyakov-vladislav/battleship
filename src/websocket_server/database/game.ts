@@ -15,6 +15,10 @@ class GameDb {
     return this.games.find((game) => game.gameId === gameId) || null;
   }
 
+  getAllGames() {
+    return this.games;
+  }
+
   pushPlayerState(gameId: string, playerState: PlayerState) {
     this.games = this.games.map((game) => {
       if (game.gameId === gameId) {

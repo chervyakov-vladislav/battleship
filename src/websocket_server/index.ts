@@ -16,11 +16,8 @@ class WebSocketServer {
 
     this.webSocketServer.on('connection', (ws) => {
       try {
-        console.log('New client connected');
-
         ws.on('close', async () => {
-          connectionController.removeConnectionBySocket(ws);
-          console.log(`Client disconnected`);
+          connectionController.disconnect(ws);
         });
       
         ws.on('message', (message) => {

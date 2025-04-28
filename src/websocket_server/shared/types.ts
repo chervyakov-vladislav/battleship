@@ -68,7 +68,8 @@ export type Winner = {
 export type Game = {
   gameId: string,  
   playersState: PlayerState[],
-  turnId: string
+  turnId: string,
+  playersId: string[]
 }
 
 export type Position = {
