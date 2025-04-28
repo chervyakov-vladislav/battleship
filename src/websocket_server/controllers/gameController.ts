@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { gameDB } from '../database/game';
 import { Command, Direction, hitStatus } from '../shared/constants';
-import { Game, Room, PlayerShipsData, ShipState, Position, Ship, AttackData, AttackResponse } from '../shared/types';
+import { Game, Room, PlayerShipsData, ShipState, Position, Ship, AttackData, AttackResponse, RandomAttckData } from '../shared/types';
 import { connectionController } from './connectionController';
 import { BoardController } from './boardController';
 import { connectionDB } from '../database/connections';
@@ -150,6 +150,27 @@ class GameController {
     return position.x >= 0 && position.x < 10 && position.y >= 0 && position.y < 10;
   }
 
+  handleRandomAttack(data: RandomAttckData) {
+    const game = gameDB.getGame(data.gameId);
+
+    if (!game) return;
+
+    const enemyBoard = game.playersState.find((state) => state.indexPlayer !== data.indexPlayer)?.board;
+
+    if (!enemyBoard) return;
+
+    const availableCells = enemyBoard.map((row) => row.filter(({ isHit }) => !isHit)).flat();
+    const randomIndex = this.getRandomInt(availableCells.length);
+
+    const { position } = availableCells[randomIndex];
+
+    this.handleAttack({ x: position.x, y: position.y, ...data})
+  }
+
+  getRandomInt(max: number) {
+    return Math.floor(Math.random() * max);
+  }
+
   handleAttack(data: AttackData) {
     const position = { x: data.x, y: data.y }
     const game = gameDB.getGame(data.gameId);
@@ -170,7 +191,6 @@ class GameController {
     if (!enemyState) return;
 
     const cell = enemyState.board[data.y][data.x];
-    console.log(cell);
 
     if (cell.isHit) {
       const ws = connectionDB.findSocketByUserId(data.indexPlayer);

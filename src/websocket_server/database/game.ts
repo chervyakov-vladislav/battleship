@@ -56,7 +56,7 @@ class GameDb {
     const ships = this.findPlayerShips(gameId, playerId);
   
     let shipState: ShipState | null = null;
-    let shipStateIndex: number = -1;
+    let shipStateIndex = -1;
   
     for (let i = 0; i < ships.length; i++) {
       if (ships[i].allPositions.some((pos) => pos.x === position.x && pos.y === position.y)) {

@@ -29,6 +29,10 @@ class Router {
       case Command.ATTACK:
         gameController.handleAttack(msg.data);
         break;
+      
+      case Command.RANDOM_ATTACK:
+        gameController.handleRandomAttack(msg.data);
+        break;
 
       default:
         connectionController.sendError(ws, 'Unexpected command')
