@@ -3,9 +3,10 @@ import { gameDB } from '../database/game';
 import { Command, Direction, hitStatus } from '../shared/constants';
 import { Game, Room, PlayerShipsData, ShipState, Position, Ship, AttackData, AttackResponse, RandomAttckData } from '../shared/types';
 import { connectionController } from './connectionController';
-import { BoardController } from './boardController';
+import { Board } from '../entities/board';
 import { connectionDB } from '../database/connections';
 import { winnersController } from './winnersController';
+import { botController } from './botController';
 
 class GameController {
   createGame(room: Room, ownerId: string) {
@@ -53,7 +54,7 @@ class GameController {
       }
     })
 
-    const board = new BoardController(indexPlayer, gameId).fillBoard(shipsState);
+    const board = new Board(indexPlayer, gameId).fillBoard(shipsState);
     gameDB.pushPlayerState(gameId, { indexPlayer, ships: shipsState, board });
 
     const currentGame = gameDB.getGame(gameId);
@@ -181,6 +182,8 @@ class GameController {
 
     if (!game) return;
 
+    const isSinglePlay = game.playersId.some((player) => player.startsWith(botController.BOT_PREFIX));
+
     if (game.turnId !== data.indexPlayer) {
       const ws = connectionDB.findSocketByUserId(data.indexPlayer);
 
@@ -237,6 +240,11 @@ class GameController {
           }
         } {
           this.sendAttackResponse(position, data.indexPlayer, [data.indexPlayer, enemyState.indexPlayer], hitStatus.SHOT);
+
+          if (isSinglePlay && game.turnId.startsWith(botController.BOT_PREFIX)) {
+            this.handleRandomAttack({ gameId: data.gameId, indexPlayer: data.indexPlayer });
+            return;
+          }
         }
         this.sendCurrentTurn(data.gameId, false);
       }
@@ -244,6 +252,10 @@ class GameController {
     } else {
       this.sendAttackResponse(position, data.indexPlayer, [data.indexPlayer, enemyState.indexPlayer], hitStatus.MISS);
       this.sendCurrentTurn(data.gameId, true);
+    }
+
+    if (isSinglePlay && game.turnId.startsWith(botController.BOT_PREFIX)) {
+      this.handleRandomAttack({ gameId: data.gameId, indexPlayer: enemyState.indexPlayer });
     }
   };
 

@@ -10,7 +10,8 @@ export const Command = {
   TURN: 'turn',
   ATTACK: 'attack',
   RANDOM_ATTACK: 'randomAttack',
-  FINISH: 'finish'
+  FINISH: 'finish',
+  SINGLE_PLAY: 'single_play'
 } as const;
 
 export const Direction = {

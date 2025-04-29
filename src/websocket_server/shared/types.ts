@@ -1,6 +1,6 @@
 import { Command } from './constants';
 
-export type ClientMessage = RegMessage | CreateRoomMessage | AddUserToRoomMessage | AddShipsMessage | AttackMessage | RandomAttackMessage;
+export type ClientMessage = RegMessage | CreateRoomMessage | AddUserToRoomMessage | AddShipsMessage | AttackMessage | RandomAttackMessage | SinglePlayMessage;
 
 export type RouterMessage = {
   response: ResponseDto,
@@ -28,6 +28,7 @@ type AddUserToRoomMessage = BaseMessage<typeof Command.ADD_USER_TO_ROOM, { index
 type AddShipsMessage = BaseMessage<typeof Command.ADD_SHIPS, PlayerShipsData>
 type AttackMessage = BaseMessage<typeof Command.ATTACK, AttackData>
 type RandomAttackMessage = BaseMessage<typeof Command.RANDOM_ATTACK, RandomAttckData>
+type SinglePlayMessage = BaseMessage<typeof Command.SINGLE_PLAY, string>;
 
 export type UserAccount = { name: string; password: string, id: string };
 export type UserAccountResponseDto = {

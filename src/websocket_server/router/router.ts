@@ -5,6 +5,7 @@ import { roomController } from '../controllers/roomController';
 import { connectionController } from '../controllers/connectionController';
 import { Command } from '../shared/constants';
 import { gameController } from '../controllers/gameController';
+import { botController } from '../controllers/botController';
 
 
 class Router {
@@ -32,6 +33,10 @@ class Router {
       
       case Command.RANDOM_ATTACK:
         gameController.handleRandomAttack(msg.data);
+        break;
+      
+      case Command.SINGLE_PLAY:
+        botController.initGame(ws);
         break;
 
       default:

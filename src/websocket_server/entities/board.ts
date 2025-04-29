@@ -1,6 +1,6 @@
 import { CellState, ShipState } from '../shared/types';
 
-export class BoardController {
+export class Board {
   BOARD_SIZE = 10;
   gameId: string;
   playerId: string;
