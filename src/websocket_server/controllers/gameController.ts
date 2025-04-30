@@ -242,7 +242,9 @@ class GameController {
           this.sendAttackResponse(position, data.indexPlayer, [data.indexPlayer, enemyState.indexPlayer], hitStatus.SHOT);
 
           if (isSinglePlay && game.turnId.startsWith(botController.BOT_PREFIX)) {
-            this.handleRandomAttack({ gameId: data.gameId, indexPlayer: data.indexPlayer });
+            setTimeout(() => {
+              this.handleRandomAttack({ gameId: data.gameId, indexPlayer: data.indexPlayer });
+            }, 500);
             return;
           }
         }
