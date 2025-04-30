@@ -182,7 +182,7 @@ class GameController {
 
     if (!game) return;
 
-    const isSinglePlay = game.turnId.startsWith(botController.BOT_PREFIX);
+    const isSinglePlay = game.playersId.some((player) => player.startsWith(botController.BOT_PREFIX));
 
     if (game.turnId !== data.indexPlayer) {
       const ws = connectionDB.findSocketByUserId(data.indexPlayer);
@@ -240,15 +240,12 @@ class GameController {
           }
         } {
           this.sendAttackResponse(position, data.indexPlayer, [data.indexPlayer, enemyState.indexPlayer], hitStatus.SHOT);
-        }
 
-        if (isSinglePlay) {
-          setTimeout(() => {
+          if (isSinglePlay && game.turnId.startsWith(botController.BOT_PREFIX)) {
             this.handleRandomAttack({ gameId: data.gameId, indexPlayer: data.indexPlayer });
-          }, 500)
-          return;
+            return;
+          }
         }
-
         this.sendCurrentTurn(data.gameId, false);
       }
 
@@ -257,7 +254,7 @@ class GameController {
       this.sendCurrentTurn(data.gameId, true);
     }
 
-    if (isSinglePlay) {
+    if (isSinglePlay && game.turnId.startsWith(botController.BOT_PREFIX)) {
       this.handleRandomAttack({ gameId: data.gameId, indexPlayer: enemyState.indexPlayer });
     }
   };
